@@ -3,36 +3,29 @@ import classes from './Dialogs.module.css';
 import {DialogItemType, DialogItem} from "./DialogItem/DialogItem";
 import Message, {MessageType} from "./Message/Message";
 
-
-type DialogsPageType = {
-    dialogs: Array<DialogItemType>
-
-}
-type DialogMessagePageType = {
-    messages: Array<MessageType>
-
-}
-
 type DialogsType = {
-    localState: DialogsPageType & DialogMessagePageType
-    addMessageCallback: (postText: string) => void
-    changeNewMessageCallback: (newMessage: string) => void
+    changeNewMessageCreator: (newMessage: string) => void
+    newMessage: () => void
     textForNewMessage: string
+    DialogsPage: any
 }
 export const Dialogs = (props: DialogsType) => {
+    let state = props.DialogsPage
 
-    let dialogElements = props.localState.dialogs.map(dialog => <DialogItem name={dialog.name} id={dialog.id}/>)
-
-    let messagesElements = props.localState.messages.map(message => <Message message={message.message}
-                                                                             id={message.id}/>)
+    let dialogElements = state.dialogs.map((dialog: DialogItemType) => <DialogItem name={dialog.name}
+                                                                                   id={dialog.id}/>)
+    let messagesElements = state.messages.map((message: MessageType) => <Message
+        message={message.message}
+        id={message.id}/>)
 
 
     const newMessage = () => {
-        props.addMessageCallback(props.textForNewMessage)
-        props.changeNewMessageCallback("")
+        props.newMessage()
     }
     const newMessageChangeHandler = (e: ChangeEvent<HTMLTextAreaElement>) => {
-        props.changeNewMessageCallback(e.currentTarget.value)
+        let newMessage = e.currentTarget.value
+        props.changeNewMessageCreator(newMessage)
+
     }
     return (
         <div className={classes.dialogs}>
@@ -40,10 +33,17 @@ export const Dialogs = (props: DialogsType) => {
                 {dialogElements}
             </div>
             <div className={classes.messages}>
-                {messagesElements}
-                <textarea value={props.textForNewMessage} onChange={newMessageChangeHandler}></textarea>
+                <div>{messagesElements}</div>
                 <div>
-                    <button onClick={newMessage}>Send</button>
+                    <div>
+                        <textarea placeholder={"Enter your message"}
+                                  value={props.textForNewMessage}
+                                  onChange={newMessageChangeHandler}>
+                        </textarea>
+                    </div>
+                    <div>
+                        <button onClick={newMessage}>Send</button>
+                    </div>
                 </div>
             </div>
 
