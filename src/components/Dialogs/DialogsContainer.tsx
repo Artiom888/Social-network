@@ -1,58 +1,34 @@
-import React, {ChangeEvent} from 'react';
-import classes from './Dialogs.module.css';
-import {DialogItemType, DialogItem} from "./DialogItem/DialogItem";
-import Message, {MessageType} from "./Message/Message";
-import {ActionsType} from "../../Redux/Store";
+import React from 'react';
 import {addMessageActionCreator, changeNewMessageCreator} from "../../Redux/DialogsReducer";
-
-
-type DialogsPageType = {
-    dialogs: Array<DialogItemType>
-
-}
-type DialogMessagePageType = {
-    messages: Array<MessageType>
-
-
-}
+import {Dialogs} from "./Dialogs";
+import StoreContext from "../../StoreContext";
 
 type DialogsType = {
-    localState: DialogsPageType & DialogMessagePageType
-    textForNewMessage: string
-    dispatch: (action: ActionsType) => void
-    store: any
-
 }
-export const Dialogs = (props: DialogsType) => {
 
-    let dialogElements = props.localState.dialogs.map(dialog => <DialogItem name={dialog.name} id={dialog.id}/>)
-    let messagesElements = props.localState.messages.map(message => <Message message={message.message}
-                                                                             id={message.id}/>)
+const DialogsContainer = (props: DialogsType) => {
 
+    return <StoreContext.Consumer>
+        {
+        (store) => {
+            let state = store.getState().DialogsPage
 
-    const newMessage = () => {
-        props.dispatch(addMessageActionCreator(props.textForNewMessage))
+            const onNewMessage = () => {
+                store.dispatch(addMessageActionCreator(state.newMessageText))
+            }
+            const onNewMessageChangeHandler = (newMessage: string) => {
+                store.dispatch(changeNewMessageCreator(newMessage))
+            }
+            return <Dialogs
+                changeNewMessageCreator={onNewMessageChangeHandler}
+                newMessage={onNewMessage}
+                DialogsPage={state}
+                textForNewMessage={state.newMessageText}
+            />
+        }
     }
-    const newMessageChangeHandler = (e: ChangeEvent<HTMLTextAreaElement>) => {
-        let newMessage = e.currentTarget.value
-        props.dispatch(changeNewMessageCreator(newMessage))
-    }
-    return (
-        <div className={classes.dialogs}>
-            <div className={classes.dialogItems}>
-                {dialogElements}
-            </div>
-            <div className={classes.messages}>
-                <div>{messagesElements}</div>
-                <div>
-                    <div><textarea placeholder={"Enter your message"}
-                                   value={props.textForNewMessage}
-                                   onChange={newMessageChangeHandler}></textarea></div>
-                    <div><button onClick={newMessage}>Send</button></div>
-                </div>
-            </div>
-
-        </div>
-    )
+    </StoreContext.Consumer>
 }
+
+export default DialogsContainer;
 
